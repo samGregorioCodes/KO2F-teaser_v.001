@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Knight of Two Fairies - Stage 1 Teaser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* palette pulled from the design doc's art style */
+    --floor:   #3B2A1A;  /* dark brown forest floor */
+    --floor-lt:#4A3422;
+    --brush:   #1E4D2B;  /* deep green brush */
+    --brush-lt:#2C6B3A;
+    --mocha:   #6B4A32;  /* mocha trees */
+    --marsh:   #FFF4DC;  /* marshmallow menu */
+    --ink:     #2B1D12;
+    --sun:     #FFD83A;  /* combat strike flash */
+    --ember:   #FF7A2F;
+    --frost:   #8FE3FF;
+    --hp:      #D6403A;
+    --mp:      #3B7DDD;
+    --st:      #E7B93C;
+    --blade:   #C9CED6;  /* Original short sword; becomes #992C1F (Comburent) */
+    --ts: 1;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 12px;
+    background: #17100A;
+    color: var(--marsh);
+    font: 800 18px/1.35 'Nunito', system-ui, sans-serif;
+  }
+
+  .wrap { max-width: 1000px; margin: 0 auto; }
+
+  h1, h2, .display { font-family: 'Lilita One', 'Arial Black', Impact, sans-serif; font-weight: 400; }
+
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:focus-visible, input:focus-visible { outline: 4px solid #fff; outline-offset: 3px; }
+
+  /* ---------- the scene ---------- */
+
+  .scene {
+    position: relative;
+    container-type: inline-size;
+    aspect-ratio: 960 / 500;
+    overflow: hidden;
+    border: 6px solid var(--ink);
+    border-radius: 26px;
+    background: var(--brush);
+    box-shadow: 0 8px 0 #000;
+  }
+  .scene > svg.art { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  .hud {
+    position: absolute;
+    font-size: calc(clamp(10px, 1.85cqw, 17px) * var(--ts));
+    transition: opacity .4s;
+  }
+  .scene.hud-off .hud { opacity: 0; }
+
+  .hud-tl { left: 1.6%; top: 2.6%; display: flex; gap: .7em; align-items: center; }
+  .hud-tr { right: 1.6%; top: 2.6%; display: flex; gap: .7em; align-items: flex-start; flex-direction: row-reverse; }
+
+  .bubble {
+    flex: none;
+    width: 5.2em; height: 5.2em;
+    border: .28em solid var(--ink);
+    border-radius: 50%;
+    background: #9CC9A4;
+    overflow: hidden;
+    box-shadow: 0 .2em 0 rgba(0,0,0,.45);
+  }
+  .bubble svg { display: block; width: 100%; height: 100%; }
+
+  .panel-s {
+    padding: .5em .8em .6em;
+    color: var(--ink);
+    background: var(--marsh);
+    border: .28em solid var(--ink);
+    border-radius: 1.2em;
+    box-shadow: 0 .2em 0 rgba(0,0,0,.45);
+  }
+
+  .bars { width: 15em; }
+  .bar-row { display: grid; grid-template-columns: 3.6em 1fr; align-items: center; gap: .4em; margin: .15em 0; }
+  .bar-row b { font-weight: 800; font-size: .8em; }
+  .bar {
+    position: relative;
+    height: 1.15em;
+    background: #3a2a1d;
+    border: .2em solid var(--ink);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .bar i { display: block; height: 100%; width: 100%; transition: width .35s ease; }
+  .bar span {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    font-size: .72em; color: #fff; text-shadow: 0 1px 0 #000, 0 0 3px #000;
+  }
+  .f-hp { background: var(--hp); }
+  .f-mp { background: var(--mp); }
+  .f-st { background: var(--st); }
+
+  .quest { max-width: 13em; font-size: .85em; }
+  .quest b { display: block; font-family: 'Lilita One', sans-serif; font-weight: 400; font-size: 1.1em; }
+
+  /* enemy concussion bar: a black and red mixture */
+  .ebar {
+    position: absolute;
+    left: 53%; width: 26%; top: 28%;
+    text-align: center;
+    font-size: calc(clamp(10px, 1.7cqw, 16px) * var(--ts));
+    transition: opacity .3s;
+  }
+  .ebar .ename { margin-bottom: .2em; text-shadow: 0 2px 0 #000, 0 0 6px #000; }
+  .ebar .bar { height: 1em; }
+  .ebar .bar i {
+    background: repeating-linear-gradient(90deg, #1A0F14 0 .5em, #C0302C .5em 1em);
+  }
+  .ebar.gone { opacity: 0; }
+
+  .floats { position: absolute; inset: 0; pointer-events: none; }
+  .float {
+    position: absolute;
+    font: 400 calc(clamp(18px, 4cqw, 40px) * var(--ts))/1 'Lilita One', sans-serif;
+    text-shadow: 0 3px 0 #000, 0 0 8px #000;
+    animation: rise 1s ease-out forwards;
+  }
+  .float.dmg  { color: var(--sun); }
+  .float.hurt { color: #FF8A80; }
+  .float.heal { color: #8DF59B; }
+  @keyframes rise { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-70px); opacity: 0; } }
+
+  /* ---------- svg actors ---------- */
+
+  .actor, .enemy { transition: transform .35s ease, opacity .6s ease; }
+  .enemy { transition: transform .7s ease, opacity .7s ease; }
+  #jeely.lunge { transform: translateX(60px); }
+  #jeely.dodge { transform: translate(-34px, -10px); opacity: .55; }
+  #jeely.hit   { animation: shake .35s; }
+  #enemy.elunge { transform: translateX(-60px); }
+  #enemy.hit   { animation: shake .35s; }
+  #enemy.ko    { transform: rotate(-84deg); }
+  #enemy.leave { transform: translateX(110px); opacity: 0; }
+
+  .swing { transition: transform .15s ease-in; }
+  .swing.go { transform: rotate(75deg); }
+
+  .snap, .snap * { transition: none !important; }
+
+  @keyframes shake {
+    0%,100% { translate: 0 0; }
+    25% { translate: -6px 0; }
+    75% { translate: 6px 0; }
+  }
+
+  .blade { fill: var(--blade); transition: fill 1.2s ease; }
+
+  .enemy.corrupt { --robe:#2A1A3F; --robe-dk:#1B1128; --face:#120C1C; --eye:#FF4A3A; --antler:#4A3A33; --orb:#B03030; }
+  .enemy.pure    { --robe:#8E5BD6; --robe-dk:#6E3FB5; --face:#F0D2B0; --eye:#2A1A3F; --antler:#C9A878; --orb:#FFD83A; }
+  .e-robe  { fill: var(--robe);    transition: fill .9s; }
+  .e-hood  { fill: var(--robe-dk); transition: fill .9s; }
+  .e-face  { fill: var(--face);    transition: fill .9s; }
+  .e-eye   { fill: var(--eye);     transition: fill .9s; }
+  .e-orb   { fill: var(--orb);     transition: fill .9s; }
+  .e-antler{ stroke: var(--antler); transition: stroke .9s; }
+  .enemy.corrupt .e-eye { filter: drop-shadow(0 0 4px #FF3B2F); }
+  .enemy.corrupt .m-good, .enemy.pure .m-bad, .enemy.pure .wisps { display: none; }
+  .wisps circle { animation: drift 2.4s ease-in-out infinite alternate; }
+  .wisps circle:nth-child(2) { animation-delay: -.8s; }
+  .wisps circle:nth-child(3) { animation-delay: -1.6s; }
+  @keyframes drift { from { transform: translateY(0); } to { transform: translateY(-14px); } }
+
+  .fairy { transition: transform 1s ease-in-out; }
+  .fairy .bob { animation: bob 2.6s ease-in-out infinite alternate; }
+  #frost .bob { animation-delay: -1.3s; }
+  @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-9px); } }
+  .wing { animation: flap .3s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+  @keyframes flap { from { transform: scaleY(1); } to { transform: scaleY(.55); } }
+
+  .spark { opacity: 0; animation: spark 1.1s ease-out forwards; transform-box: fill-box; transform-origin: center; }
+  @keyframes spark {
+    0%   { opacity: 0; transform: scale(.2); }
+    35%  { opacity: 1; transform: scale(1.2); }
+    100% { opacity: 0; transform: scale(.4) translateY(-30px); }
+  }
+
+  #flash { opacity: 0; transform-box: fill-box; transform-origin: center; }
+  #flash.on { animation: flash .3s ease-out; }
+  @keyframes flash {
+    0%   { opacity: 1; transform: scale(.3); }
+    100% { opacity: 0; transform: scale(1.8); }
+  }
+
+  /* ---------- console: log + hotbar ---------- */
+
+  .console {
+    margin-top: 14px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: stretch;
+  }
+
+  .log {
+    min-height: 7.2em;
+    padding: .7em 1em;
+    color: var(--ink);
+    background: var(--marsh);
+    border: 5px solid var(--ink);
+    border-radius: 24px;
+    box-shadow: 0 6px 0 #000;
+    font-size: calc(1rem * var(--ts));
+  }
+  .log p { margin: .15em 0; opacity: .6; }
+  .log p:last-child { opacity: 1; }
+
+  .hotbar { display: flex; gap: 8px; align-items: stretch; flex-wrap: wrap; justify-content: center; }
+  .hotbar .sep { width: 4px; background: #000; border-radius: 4px; opacity: .5; }
+
+  .slot {
+    position: relative;
+    width: 5.4rem; height: 6.2rem;
+    padding: .3rem .2rem .2rem;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: .1rem;
+    color: var(--ink);
+    background: var(--marsh);
+    border: 5px solid var(--ink);
+    border-radius: 8px;           /* square buttons */
+    box-shadow: 0 6px 0 #000;
+    transition: transform .08s, box-shadow .08s, background .15s;
+  }
+  .slot:hover:not(:disabled) { background: #FFFFFF; }
+  .slot:active:not(:disabled) { transform: translateY(5px); box-shadow: 0 1px 0 #000; }
+  .slot .ic { width: 2.4rem; height: 2.4rem; fill: currentColor; stroke: currentColor; }
+  .slot .lbl { font-size: .72rem; line-height: 1; font-weight: 800; }
+  .slot .key {
+    position: absolute; top: -.7rem; left: -.7rem;
+    min-width: 1.6rem; height: 1.6rem; padding: 0 .3rem;
+    display: grid; place-items: center;
+    font: 400 .95rem/1 'Lilita One', sans-serif;
+    color: var(--marsh); background: var(--ink); border-radius: 6px;
+  }
+  .slot .cnt {
+    position: absolute; top: .15rem; right: .25rem;
+    font: 400 1.1rem/1 'Lilita One', sans-serif;
+  }
+  .slot.sword  { color: #6B6F7A; }
+  .slot.hpp    { color: var(--hp); }
+  .slot.mpp    { color: var(--mp); }
+  .slot.sprint { color: #3C8C3C; }
+  .slot:disabled { cursor: not-allowed; }
+  .slot.locked { color: #8d8372; background: #D9CDB4; border-style: dashed; }
+  .slot.locked .lbl::after { content: ' (locked)'; }
+  .slot.unlocked { color: #D5541B; background: #FFE9B8; }
+  .slot.dim { opacity: .55; }
+
+  /* ---------- overlay cards ---------- */
+
+  .overlay {
+    position: fixed; inset: 0; z-index: 10;
+    display: grid; place-items: center;
+    padding: 1rem;
+    overflow: auto;
+    background: rgba(20, 12, 8, .55);
+  }
+  .overlay[hidden] { display: none; }
+
+  .card {
+    width: min(36rem, 100%);
+    padding: 1.6rem 1.8rem 1.8rem;
+    color: var(--ink);
+    background: var(--marsh);
+    border: 6px solid var(--ink);
+    border-radius: 32px;
+    box-shadow: 0 10px 0 #000;
+    text-align: center;
+    font-size: calc(1.05rem * var(--ts));
+  }
+  .card h1 { margin: 0 0 .3rem; font-size: clamp(2.2rem, 8vw, 3.4rem); line-height: 1; color: #2F6B3A; text-shadow: 0 3px 0 #fff, 0 6px 0 var(--ink); }
+  .card h2 { margin: 0 0 .5rem; font-size: 2.2rem; line-height: 1.05; }
+  .card p { margin: .5rem auto; max-width: 30rem; }
+  .card .small { font-size: .85em; opacity: .8; }
+  .card .gift {
+    margin: .9rem auto;
+    padding: .7rem 1rem;
+    background: #FFE9B8;
+    border: 4px solid var(--ink);
+    border-radius: 18px;
+  }
+  .swatch { display: inline-block; width: 1.1em; height: 1.1em; vertical-align: -.15em; border: 3px solid var(--ink); border-radius: 4px; }
+
+  .go {
+    margin-top: .8rem;
+    padding: .6rem 1.6rem;
+    font: 400 1.5rem/1 'Lilita One', sans-serif;
+    color: var(--marsh);
+    background: #2F6B3A;
+    border: 5px solid var(--ink);
+    border-radius: 10px;
+    box-shadow: 0 6px 0 var(--ink);
+  }
+  .go:hover { background: #3C8C3C; }
+  .go:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--ink); }
+
+  /* ---------- footer: accessibility ---------- */
+
+  .foot {
+    margin-top: 16px;
+    display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; justify-content: space-between; align-items: center;
+    font-size: .85rem; color: #BDAE92;
+  }
+  .foot label { display: inline-flex; gap: .6rem; align-items: center; }
+  .foot input[type=range] { width: 8rem; accent-color: var(--ember); }
+
+  @media (max-width: 760px) {
+    .console { grid-template-columns: 1fr; }
+    .quest { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fairy .bob, .wing, .wisps circle { animation: none; }
+    .float { animation-duration: .01s; animation-delay: 1s; }
+    .actor, .enemy, .fairy, .swing { transition-duration: .01s; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="scene hud-off" id="scene">
+
+    <svg class="art" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="canopy" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#173B21"/>
+          <stop offset=".55" stop-color="#2A5B31"/>
+          <stop offset="1" stop-color="#3A2A1A"/>
+        </linearGradient>
+        <pattern id="iso" width="68" height="34" patternUnits="userSpaceOnUse" patternTransform="translate(0 -3)">
+          <path d="M0 0 L68 34 M68 0 L0 34" stroke="rgba(255,255,255,.09)" stroke-width="2" fill="none"/>
+        </pattern>
+        <radialGradient id="glowE"><stop offset="0" stop-color="#FF9A4A" stop-opacity=".9"/><stop offset="1" stop-color="#FF7A2F" stop-opacity="0"/></radialGradient>
+        <radialGradient id="glowF"><stop offset="0" stop-color="#BFF0FF" stop-opacity=".9"/><stop offset="1" stop-color="#8FE3FF" stop-opacity="0"/></radialGradient>
+
+        <symbol id="i-sword" viewBox="0 0 32 32"><path d="M26 3 L29 6 L14 22 L10 18 Z" stroke="none"/><path d="M5 21 L11 27 M3 29 L8 24" fill="none" stroke-width="3.2" stroke-linecap="round"/></symbol>
+        <symbol id="i-potion" viewBox="0 0 32 32"><path d="M12 3h8v3h-1.6v5L25 22.5a4 4 0 0 1-3.5 5.5h-11A4 4 0 0 1 7 22.5L13.6 11V6H12z" stroke="none"/></symbol>
+        <symbol id="i-run" viewBox="0 0 32 32"><path d="M5 6l10 10L5 26M16 6l10 10-10 10" fill="none" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+        <symbol id="i-lock" viewBox="0 0 32 32"><rect x="7" y="14" width="18" height="13" rx="2.5" stroke="none"/><path d="M11 14v-3.5a5 5 0 0 1 10 0V14" fill="none" stroke-width="3"/></symbol>
+        <symbol id="i-flame" viewBox="0 0 32 32"><path d="M16 2c1 6 8 9 8 17a8 8 0 0 1-16 0c0-4 2-6 4-8 0 3 1 4 2 4 0-4-1-8 2-13z" stroke="none"/></symbol>
+      </defs>
+
+      <!-- forest backdrop -->
+      <rect width="960" height="500" fill="url(#canopy)"/>
+      <g fill="#6B4A32">
+        <rect x="36" y="40" width="54" height="300" rx="6"/><rect x="170" y="70" width="40" height="260" rx="6"/>
+        <rect x="760" y="60" width="48" height="280" rx="6"/><rect x="880" y="30" width="56" height="310" rx="6"/>
+      </g>
+      <g fill="#54382A">
+        <rect x="68" y="40" width="22" height="300"/><rect x="194" y="70" width="16" height="260"/>
+        <rect x="790" y="60" width="18" height="280"/><rect x="914" y="30" width="22" height="310"/>
+      </g>
+      <g fill="#1E4D2B">
+        <circle cx="70" cy="40" r="95"/><circle cx="190" cy="40" r="80"/><circle cx="330" cy="10" r="90"/>
+        <circle cx="640" cy="5" r="95"/><circle cx="790" cy="35" r="85"/><circle cx="910" cy="25" r="100"/>
+      </g>
+      <g fill="#2C6B3A">
+        <circle cx="40" cy="70" r="60"/><circle cx="215" cy="60" r="50"/><circle cx="360" cy="40" r="55"/>
+        <circle cx="610" cy="35" r="55"/><circle cx="820" cy="65" r="50"/><circle cx="930" cy="60" r="55"/>
+      </g>
+      <g fill="#1E4D2B">
+        <ellipse cx="90" cy="300" rx="110" ry="60"/><ellipse cx="860" cy="300" rx="120" ry="64"/>
+        <ellipse cx="300" cy="190" rx="90" ry="30"/><ellipse cx="660" cy="190" rx="100" ry="32"/>
+      </g>
+      <g fill="#2C6B3A">
+        <ellipse cx="120" cy="285" rx="80" ry="38"/><ellipse cx="840" cy="285" rx="85" ry="40"/>
+      </g>
+
+      <!-- isometric clearing -->
+      <polygon points="140,320 480,150 820,320 480,490" fill="#4A3422" stroke="#3C8C3C" stroke-width="10" stroke-linejoin="round"/>
+      <polygon points="140,320 480,150 820,320 480,490" fill="url(#iso)"/>
+      <g>
+        <circle cx="170" cy="332" r="5" fill="#E0558A"/><circle cx="196" cy="344" r="4" fill="#FFD83A"/>
+        <circle cx="240" cy="376" r="5" fill="#FFD83A"/><circle cx="780" cy="336" r="5" fill="#E0558A"/>
+        <circle cx="742" cy="360" r="4" fill="#FFFFFF"/><circle cx="700" cy="392" r="5" fill="#E0558A"/>
+        <circle cx="430" cy="470" r="4" fill="#FFD83A"/><circle cx="520" cy="478" r="5" fill="#FFFFFF"/>
+      </g>
+
+      <!-- Jeely -->
+      <g transform="translate(330 360)">
+        <g id="jeely" class="actor">
+          <ellipse cx="0" cy="4" rx="40" ry="10" fill="rgba(0,0,0,.4)"/>
+          <rect x="-17" y="-46" width="13" height="46" rx="4" fill="#2B2118"/>
+          <rect x="4" y="-46" width="13" height="46" rx="4" fill="#2B2118"/>
+          <rect x="-19" y="-8" width="17" height="8" rx="3" fill="#15100A"/>
+          <rect x="2" y="-8" width="17" height="8" rx="3" fill="#15100A"/>
+          <rect x="-36" y="-96" width="13" height="42" rx="6" fill="#F3E3C0"/>
+          <rect x="-25" y="-100" width="50" height="60" rx="10" fill="#0B0B0D" stroke="#8A8A98" stroke-width="3"/>
+          <path d="M-15 -86h30M-15 -70h30M-15 -54h30" stroke="#3A3A44" stroke-width="3"/>
+          <rect x="17" y="-98" width="34" height="13" rx="6.5" fill="#F3E3C0" transform="rotate(-18 19 -92)"/>
+          <circle cx="0" cy="-124" r="20" fill="#E8B98F"/>
+          <path d="M-24 -121 C-28 -152 28 -152 24 -121 L27 -92 L16 -97 L16 -121 L-16 -121 L-16 -97 L-27 -92 Z" fill="#07070A"/>
+          <circle cx="-7" cy="-120" r="2.6" fill="#07070A"/><circle cx="7" cy="-120" r="2.6" fill="#07070A"/>
+          <path d="M-5 -112q5 4 10 0" stroke="#7A4A33" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <g transform="translate(50 -92)">
+            <g class="swing" id="swing">
+              <polygon class="blade" points="-5,-6 5,-6 5,-58 0,-66 -5,-58"/>
+              <rect x="-13" y="-8" width="26" height="7" rx="3" fill="#6B4A32"/>
+              <rect x="-4" y="-1" width="8" height="18" rx="3" fill="#3B2A1A"/>
+              <circle cx="0" cy="20" r="5.5" fill="#327A36" stroke="#1E4D2B" stroke-width="2"/>
+            </g>
+          </g>
+        </g>
+      </g>
+
+      <!-- enemy -->
+      <g transform="translate(650 360)">
+        <g id="enemy" class="enemy corrupt leave">
+          <ellipse cx="0" cy="4" rx="42" ry="10" fill="rgba(0,0,0,.4)"/>
+          <path class="e-robe" d="M-40 0 Q0 11 40 0 L27 -92 L-27 -92 Z" stroke="#120A1C" stroke-width="3"/>
+          <path d="M-31 -34 Q0 -26 31 -34" stroke="#120A1C" stroke-width="4" fill="none" opacity=".6"/>
+          <line x1="40" y1="-8" x2="40" y2="-140" stroke="#6B4A32" stroke-width="6" stroke-linecap="round"/>
+          <circle class="e-orb" cx="40" cy="-148" r="10" stroke="#120A1C" stroke-width="3"/>
+          <circle class="e-hood" cx="0" cy="-112" r="28" stroke="#120A1C" stroke-width="3"/>
+          <ellipse class="e-face" cx="-5" cy="-108" rx="17" ry="15"/>
+          <circle class="e-eye" cx="-12" cy="-112" r="3.6"/><circle class="e-eye" cx="3" cy="-112" r="3.6"/>
+          <path class="m-bad" d="M-14 -99l4 5 4 -5 4 5 4 -5 4 5" stroke="#FF4A3A" stroke-width="2.4" fill="none" stroke-linejoin="round"/>
+          <path class="m-good" d="M-14 -101 Q-5 -91 4 -101" stroke="#7A4A33" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+          <g class="e-antler" fill="none" stroke-width="4" stroke-linecap="round">
+            <path d="M-14 -136 L-22 -160 M-22 -160 L-32 -154 M-22 -160 L-20 -172"/>
+            <path d="M10 -136 L18 -160 M18 -160 L28 -154 M18 -160 L16 -172"/>
+          </g>
+          <g class="wisps" fill="#7B2FB8" opacity=".7">
+            <circle cx="-48" cy="-60" r="6"/><circle cx="52" cy="-90" r="5"/><circle cx="-34" cy="-130" r="4"/>
+          </g>
+        </g>
+      </g>
+
+      <!-- strike flash -->
+      <g transform="translate(640 280)"><g id="flash">
+        <polygon points="0,-30 8,-10 30,-8 12,6 18,28 0,16 -18,28 -12,6 -30,-8 -8,-10" fill="#FFD83A" stroke="#fff" stroke-width="3"/>
+      </g></g>
+
+      <g id="sparkles"></g>
+
+      <!-- fairies -->
+      <g id="ember" class="fairy" style="transform: translate(255px, 215px)">
+        <g class="bob">
+          <circle r="30" fill="url(#glowE)"/>
+          <ellipse class="wing" cx="-11" cy="-6" rx="11" ry="6" fill="#FFE2C4" opacity=".85"/>
+          <ellipse class="wing" cx="11" cy="-6" rx="11" ry="6" fill="#FFE2C4" opacity=".85"/>
+          <circle r="8" fill="#FF9A4A" stroke="#B8420E" stroke-width="2"/>
+        </g>
+      </g>
+      <g id="frost" class="fairy" style="transform: translate(405px, 200px)">
+        <g class="bob">
+          <circle r="30" fill="url(#glowF)"/>
+          <ellipse class="wing" cx="-11" cy="-6" rx="11" ry="6" fill="#E8FAFF" opacity=".9"/>
+          <ellipse class="wing" cx="11" cy="-6" rx="11" ry="6" fill="#E8FAFF" opacity=".9"/>
+          <circle r="8" fill="#CFF6FF" stroke="#3A8FB8" stroke-width="2"/>
+        </g>
+      </g>
+    </svg>
+
+    <!-- top-left: Jeely bubble + bars -->
+    <div class="hud hud-tl">
+      <div class="bubble" aria-hidden="true">
+        <svg viewBox="0 0 60 60"><rect width="60" height="60" fill="#9CC9A4"/>
+          <path d="M10 60 Q12 42 30 42 Q48 42 50 60Z" fill="#0B0B0D" stroke="#8A8A98" stroke-width="1.5"/>
+          <path d="M10 34 C8 8 52 8 50 34 L53 52 L44 48 L44 30 L16 30 L16 48 L7 52Z" fill="#07070A"/>
+          <circle cx="30" cy="30" r="14" fill="#E8B98F"/>
+          <path d="M14 30 C12 12 48 12 46 30 L44 24 C38 16 22 16 16 24Z" fill="#07070A"/>
+          <circle cx="25" cy="31" r="1.8" fill="#07070A"/><circle cx="35" cy="31" r="1.8" fill="#07070A"/>
+          <path d="M26 37q4 3 8 0" stroke="#7A4A33" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="panel-s bars">
+        <div class="bar-row"><b>Health</b><div class="bar"><i class="f-hp" id="hpFill"></i><span id="hpTxt">100</span></div></div>
+        <div class="bar-row"><b>Mana</b><div class="bar"><i class="f-mp" id="mpFill"></i><span id="mpTxt">100</span></div></div>
+        <div class="bar-row"><b>Stamina</b><div class="bar"><i class="f-st" id="stFill"></i><span id="stTxt">100</span></div></div>
+      </div>
+    </div>
+
+    <!-- top-right: map bubble + quest tracker -->
+    <div class="hud hud-tr">
+      <div class="bubble" aria-hidden="true">
+        <svg viewBox="0 0 60 60"><rect width="60" height="60" fill="#2C6B3A"/>
+          <path d="M0 40 Q20 30 36 36 T60 30" stroke="#6FC3E8" stroke-width="5" fill="none"/>
+          <circle cx="34" cy="26" r="5" fill="#C98B4A" stroke="#2B1D12" stroke-width="2"/>
+          <circle cx="14" cy="14" r="5" fill="#8E5BD6" stroke="#2B1D12" stroke-width="2"/>
+          <circle cx="46" cy="48" r="3" fill="#FFD83A"/>
+        </svg>
+      </div>
+      <div class="panel-s quest"><b>Quest</b><span id="quest">Calm the Black-Robes: 0 of 4</span></div>
+    </div>
+
+    <div class="ebar gone" id="ebar">
+      <div class="ename" id="ename">Ferocious Black-Robe</div>
+      <div class="bar"><i id="eFill"></i></div>
+    </div>
+
+    <div class="floats" id="floats"></div>
+  </div>
+
+  <!-- log + hotbar -->
+  <div class="console">
+    <div class="log" id="log" role="log" aria-live="polite"><p>Press Begin to wake Jeely.</p></div>
+
+    <div class="hotbar" id="hotbar">
+      <button class="slot sprint" id="b-sprint" type="button" disabled>
+        <span class="key">Space</span><svg class="ic" aria-hidden="true"><use href="#i-run"/></svg><span class="lbl">Sprint</span>
+      </button>
+      <span class="sep" aria-hidden="true"></span>
+      <button class="slot sword" id="b-sword" type="button" disabled>
+        <span class="key">1</span><svg class="ic" aria-hidden="true"><use href="#i-sword"/></svg><span class="lbl">Sword</span>
+      </button>
+      <button class="slot hpp" id="b-hp" type="button" disabled>
+        <span class="key">2</span><span class="cnt" id="hpCnt">3</span><svg class="ic" aria-hidden="true"><use href="#i-potion"/></svg><span class="lbl">Health</span>
+      </button>
+      <button class="slot mpp" id="b-mp" type="button" disabled>
+        <span class="key">3</span><span class="cnt" id="mpCnt">2</span><svg class="ic" aria-hidden="true"><use href="#i-potion"/></svg><span class="lbl">Mana</span>
+      </button>
+      <button class="slot locked" id="b-frost" type="button" disabled aria-disabled="true">
+        <span class="key">4</span><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span class="lbl">Frost</span>
+      </button>
+      <button class="slot locked" id="b-fire" type="button" disabled aria-disabled="true">
+        <span class="key">5</span><svg class="ic" id="fireIc" aria-hidden="true"><use href="#i-lock"/></svg><span class="lbl">Fire</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>Knight of Two Fairies &middot; Stage 1 teaser v0.1 &middot; made by Sam with AI</span>
+    <label>Text size <input type="range" id="ts" min="90" max="140" value="100" aria-label="Text size"></label>
+  </div>
+</div>
+
+<!-- title / end cards -->
+<div class="overlay" id="overlay">
+  <div class="card" id="card" role="dialog" aria-modal="true" aria-labelledby="ovTitle"></div>
+</div>
+
+<script>
+(() => {
+  // ---- numbers from the design doc (Stage One column) ----
+  const DOC = { maxHp: 100, maxMp: 100, maxSt: 100, swordDmg: 5, enemyConcussion: 30, enemyDmg: 3 };
+  // ---- placeholders I chose; tune these ----
+  const TUNE = { swordCost: 20, regen: 5, sprintGain: 35, healAmt: 30, mpAmt: 30, enemies: 4, hpPotions: 3, mpPotions: 2 };
+
+  const $ = id => document.getElementById(id);
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  const el = {
+    scene: $('scene'), jeely: $('jeely'), enemy: $('enemy'), swing: $('swing'), flash: $('flash'),
+    ember: $('ember'), frost: $('frost'), sparkles: $('sparkles'),
+    hpFill: $('hpFill'), mpFill: $('mpFill'), stFill: $('stFill'),
+    hpTxt: $('hpTxt'), mpTxt: $('mpTxt'), stTxt: $('stTxt'),
+    eFill: $('eFill'), ebar: $('ebar'), ename: $('ename'), quest: $('quest'),
+    log: $('log'), floats: $('floats'), overlay: $('overlay'), card: $('card'),
+    hpCnt: $('hpCnt'), mpCnt: $('mpCnt'),
+    bSprint: $('b-sprint'), bSword: $('b-sword'), bHp: $('b-hp'), bMp: $('b-mp'),
+    bFire: $('b-fire'), fireIc: $('fireIc')
+  };
+
+  const mageLines = [
+    '"Jeely? I had the strangest dream. Something dark was steering me."',
+    '"The deer... are the deer safe? Please tell me they are safe."',
+    '"My hands remember the old spells. Thank you, little lights."',
+    '"Go on, protector. The rest of us are still out there."'
+  ];
+
+  const S = {};
+  let logs = [];
+
+  function reset() {
+    Object.assign(S, {
+      hp: DOC.maxHp, mp: DOC.maxMp, st: DOC.maxSt,
+      hpPot: TUNE.hpPotions, mpPot: TUNE.mpPotions,
+      cleared: 0, ehp: DOC.enemyConcussion,
+      busy: false, active: false
+    });
+    logs = [];
+    document.documentElement.style.setProperty('--blade', '#C9CED6');
+    el.bFire.classList.add('locked'); el.bFire.classList.remove('unlocked');
+    el.fireIc.innerHTML = '<use href="#i-lock"/>';
+    setPlaceholderEnemy();
+    ui();
+  }
+
+  function setPlaceholderEnemy() {
+    el.enemy.classList.add('snap');
+    el.enemy.setAttribute('class', 'enemy corrupt leave snap');
+    void el.enemy.getBoundingClientRect();
+    el.enemy.classList.remove('snap');
+    el.ename.textContent = 'Ferocious Black-Robe 1 of ' + TUNE.enemies;
+  }
+
+  function ui() {
+    const pct = (v, m) => Math.max(0, Math.min(100, v / m * 100)) + '%';
+    el.hpFill.style.width = pct(S.hp, DOC.maxHp); el.hpTxt.textContent = S.hp;
+    el.mpFill.style.width = pct(S.mp, DOC.maxMp); el.mpTxt.textContent = S.mp;
+    el.stFill.style.width = pct(S.st, DOC.maxSt); el.stTxt.textContent = S.st;
+    el.eFill.style.width = pct(S.ehp, DOC.enemyConcussion);
+    el.hpCnt.textContent = S.hpPot; el.mpCnt.textContent = S.mpPot;
+    el.quest.textContent = 'Calm the Black-Robes: ' + S.cleared + ' of ' + TUNE.enemies;
+    const on = S.active && !S.busy;
+    el.bSprint.disabled = el.bSword.disabled = el.bHp.disabled = el.bMp.disabled = !on;
+    [el.bSprint, el.bSword, el.bHp, el.bMp].forEach(b => b.classList.toggle('dim', !on));
+  }
+
+  function say(msg) {
+    logs.push(msg); logs = logs.slice(-3);
+    el.log.innerHTML = logs.map(m => '<p>' + m + '</p>').join('');
+  }
+
+  function floatText(text, cls, x, y) {
+    const s = document.createElement('span');
+    s.className = 'float ' + cls; s.textContent = text;
+    s.style.left = x + '%'; s.style.top = y + '%';
+    el.floats.appendChild(s);
+    setTimeout(() => s.remove(), 1100);
+  }
+  const atEnemy = (t, c) => floatText(t, c, 64, 34);
+  const atJeely = (t, c) => floatText(t, c, 32, 36);
+
+  async function pulse(node, cls, ms) { node.classList.add(cls); await sleep(ms); node.classList.remove(cls); }
+
+  function strikeFlash() {
+    el.flash.classList.remove('on'); void el.flash.getBoundingClientRect(); el.flash.classList.add('on');
+  }
+
+  async function swordSwing() {
+    el.jeely.classList.add('lunge'); el.swing.classList.add('go');
+    await sleep(170);
+    strikeFlash(); pulse(el.enemy, 'hit', 350);
+    await sleep(200);
+    el.swing.classList.remove('go'); el.jeely.classList.remove('lunge');
+    await sleep(200);
+  }
+
+  // ---- fairies ----
+  const REST = { ember: [255, 215], frost: [405, 200] };
+  const NEAR = { ember: [600, 205], frost: [705, 195] };
+  function fairyTo(which, pos) { el[which].style.transform = 'translate(' + pos[which][0] + 'px,' + pos[which][1] + 'px)'; }
+  function fairies(pos) { fairyTo('ember', pos); fairyTo('frost', pos); }
+
+  function sparkle() {
+    const NS = 'http://www.w3.org/2000/svg';
+    for (let i = 0; i < 16; i++) {
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('class', 'spark');
+      c.setAttribute('cx', 620 + Math.random() * 70);
+      c.setAttribute('cy', 250 + Math.random() * 100);
+      c.setAttribute('r', 3 + Math.random() * 4);
+      c.setAttribute('fill', i % 2 ? '#FF9A4A' : '#BFF0FF');
+      c.style.animationDelay = (Math.random() * 0.6) + 's';
+      el.sparkles.appendChild(c);
+      setTimeout(() => c.remove(), 2000);
+    }
+  }
+
+  // ---- turn flow ----
+  async function enemyTurn(dodged) {
+    await sleep(250);
+    await pulse(el.enemy, 'elunge', 280);
+    if (dodged) {
+      say('The Black-Robe lashes out, but Jeely is already gone.');
+    } else {
+      S.hp = Math.max(0, S.hp - DOC.enemyDmg);
+      atJeely('-' + DOC.enemyDmg, 'hurt');
+      pulse(el.jeely, 'hit', 350);
+      say('The Black-Robe hits Jeely for ' + DOC.enemyDmg + '.');
+    }
+    S.st = Math.min(DOC.maxSt, S.st + TUNE.regen);
+    ui();
+    if (S.hp <= 0) { await defeat(); return; }
+    await sleep(250);
+    S.busy = false; ui();
+  }
+
+  async function knockout() {
+    say('The Black-Robe collapses, knocked out! Frost and Ember drift down to help.');
+    el.ebar.classList.add('gone');
+    el.enemy.classList.add('ko');
+    await sleep(900);
+    fairies(NEAR);
+    await sleep(1100);
+    sparkle();
+    await sleep(900);
+    el.enemy.classList.remove('corrupt'); el.enemy.classList.add('pure');
+    await sleep(1000);
+    el.enemy.classList.remove('ko');
+    say('A Violet Mage blinks awake. ' + mageLines[S.cleared]);
+    await sleep(1800);
+    el.enemy.classList.add('leave');
+    fairies(REST);
+    S.cleared++; ui();
+    await sleep(900);
+
+    if (S.cleared >= TUNE.enemies) { await stageClear(); return; }
+
+    S.ehp = DOC.enemyConcussion;
+    el.enemy.classList.add('snap');
+    el.enemy.setAttribute('class', 'enemy corrupt leave snap');
+    void el.enemy.getBoundingClientRect();
+    el.enemy.classList.remove('snap');
+    el.ename.textContent = 'Ferocious Black-Robe ' + (S.cleared + 1) + ' of ' + TUNE.enemies;
+    ui();
+    el.enemy.classList.remove('leave');
+    el.ebar.classList.remove('gone');
+    say('Another Black-Robe steps into the clearing.');
+    await sleep(700);
+    S.busy = false; ui();
+  }
+
+  async function act(kind) {
+    if (!S.active || S.busy) return;
+
+    if (kind === 'sword') {
+      if (S.st < TUNE.swordCost) { say('Jeely is out of breath. Sprint to recover stamina.'); return; }
+      S.busy = true; S.st -= TUNE.swordCost; ui();
+      await swordSwing();
+      S.ehp = Math.max(0, S.ehp - DOC.swordDmg);
+      atEnemy('-' + DOC.swordDmg, 'dmg');
+      say('Jeely strikes for ' + DOC.swordDmg + '. Concussion: ' + S.ehp + ' of ' + DOC.enemyConcussion + '.');
+      ui();
+      await sleep(500);
+      if (S.ehp <= 0) await knockout(); else await enemyTurn(false);
+    }
+
+    else if (kind === 'sprint') {
+      S.busy = true; ui();
+      const gain = Math.min(TUNE.sprintGain, DOC.maxSt - S.st);
+      S.st += gain; ui();
+      if (gain) atJeely('+' + gain, 'heal');
+      say('Jeely sprints out of reach and catches his breath.');
+      await pulse(el.jeely, 'dodge', 450);
+      await enemyTurn(true);
+    }
+
+    else if (kind === 'hp') {
+      if (S.hpPot <= 0) { say('No health potions left.'); return; }
+      if (S.hp >= DOC.maxHp) { say('Jeely is already at full health.'); return; }
+      S.busy = true;
+      const heal = Math.min(TUNE.healAmt, DOC.maxHp - S.hp);
+      S.hp += heal; S.hpPot--; ui();
+      atJeely('+' + heal, 'heal');
+      say('Jeely drinks a health potion and recovers ' + heal + '.');
+      await sleep(600);
+      await enemyTurn(false);
+    }
+
+    else if (kind === 'mp') {
+      if (S.mpPot <= 0) { say('No mana potions left.'); return; }
+      if (S.mp >= DOC.maxMp) { say('Mana is already full. Fire Strike comes after Stage 1.'); return; }
+    }
+  }
+
+  async function stageClear() {
+    document.documentElement.style.setProperty('--blade', '#992C1F');
+    el.bFire.classList.remove('locked'); el.bFire.classList.add('unlocked');
+    el.fireIc.innerHTML = '<use href="#i-flame"/>';
+    say('The forest edge breathes easier. Ember blesses Jeely\'s sword.');
+    await sleep(1600);
+    S.active = false; S.busy = false; ui();
+    card(`
+      <h2 id="ovTitle">Stage 1 cleared</h2>
+      <p>All four Violet Mages are themselves again. Morift's side of the forest is quiet for the first time in a long while.</p>
+      <div class="gift">
+        <b>Ember's first blessing</b><br>
+        Jeely's Short Sword becomes <b>Comburent</b> <span class="swatch" style="background:#992C1F"></span> and Fire Strike is unlocked.
+      </div>
+      <p class="small">Next up: Stage 2, the Bogg Guardians, where Frost enchants the cuirass. That stage is not built yet.</p>
+      <button class="go" id="again" type="button">Play again</button>`, 'again', begin);
+  }
+
+  async function defeat() {
+    S.active = false; S.busy = false; ui();
+    await sleep(400);
+    card(`
+      <h2 id="ovTitle">Jeely is knocked out</h2>
+      <p>He wakes up in his own bed in Morift, a little embarrassed. The stage has reset, and nothing is lost.</p>
+      <button class="go" id="again" type="button">Return to the forest</button>`, 'again', begin);
+  }
+
+  function card(html, focusId, handler) {
+    el.card.innerHTML = html;
+    el.overlay.hidden = false;
+    const b = $(focusId); b.addEventListener('click', handler); b.focus();
+  }
+
+  function titleCard() {
+    card(`
+      <h1 id="ovTitle">Knight of Two Fairies</h1>
+      <p class="display" style="font-size:1.3rem;margin-top:.2rem">Stage 1 teaser</p>
+      <p>Jeely, protector of Morift and great with a blade, teams up with two fairies, Frost and Ember, to return the forest of Amberfalla to its happiest state.</p>
+      <p class="small">Knock four corrupted Black-Robes unconscious and the fairies will do the rest. Click the boxes, or press 1, 2, 3, and Space.</p>
+      <button class="go" id="start" type="button">Begin Stage 1</button>`, 'start', begin);
+  }
+
+  async function begin() {
+    el.overlay.hidden = true;
+    el.ember.getBoundingClientRect();
+    reset();
+    fairies(REST);
+    el.scene.classList.remove('hud-off');
+    el.ebar.classList.add('gone');
+    say('Four Ferocious Black-Robes block the clearing. Knock each one out, then let the fairies purify them.');
+    await sleep(700);
+    el.enemy.classList.remove('leave');
+    el.ebar.classList.remove('gone');
+    await sleep(700);
+    S.active = true; ui();
+  }
+
+  // ---- input ----
+  el.bSword.addEventListener('click', () => act('sword'));
+  el.bSprint.addEventListener('click', () => act('sprint'));
+  el.bHp.addEventListener('click', () => act('hp'));
+  el.bMp.addEventListener('click', () => act('mp'));
+  document.addEventListener('keydown', e => {
+    if (!el.overlay.hidden) return;
+    if (e.key === '1') act('sword');
+    else if (e.key === '2') act('hp');
+    else if (e.key === '3') act('mp');
+    else if (e.key === ' ') { e.preventDefault(); act('sprint'); }
+  });
+
+  $('ts').addEventListener('input', e => {
+    document.documentElement.style.setProperty('--ts', e.target.value / 100);
+  });
+
+  reset();
+  titleCard();
+})();
+</script>
+</body>
+</html>
